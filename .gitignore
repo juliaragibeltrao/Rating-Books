@@ -1,0 +1,4 @@
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+fix_short_title.py
