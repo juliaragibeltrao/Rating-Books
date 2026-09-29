@@ -35,7 +35,7 @@ requirements.txt
 ### 1. Gêneros com mais avaliações e melhores notas
 
 Fiction, Fantasy e Young Adult lideram em volume. Como cada livro entra, em média, em **7,8
-gêneros**, os três se sobrepõem bastante.
+gêneros**, esses gêneros acabam se sobrepondo.
 
 ![Gêneros com mais avaliações](images/01-generos-avaliacoes.png)
 
