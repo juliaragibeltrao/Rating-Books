@@ -1,8 +1,8 @@
 # Rating Books
 
-Análise exploratória de um acervo de **52.478 livros** raspados do Goodreads (25 colunas, ~74 MB).
-O notebook responde a quatro perguntas sobre gêneros, avaliações, autores e preços — e registra o
-caminho até cada resposta, incluindo os pontos em que o dado engana.
+Análise de um acervo de **52.478 livros** raspados do Goodreads (25 colunas, ~74 MB). O notebook
+responde a quatro perguntas sobre gêneros, notas, autores e preços — e mostra o caminho até cada
+resposta.
 
 ## As perguntas
 
@@ -19,7 +19,7 @@ jupyter lab analise.ipynb
 ```
 
 O notebook já vem executado, com as tabelas e gráficos salvos. Para gerar as imagens usadas neste
-README, basta rodar todas as células — os PNGs são escritos em `images/`.
+README, rode todas as células — os PNGs são escritos em `images/`.
 
 ## Estrutura
 
@@ -30,12 +30,12 @@ images/                            gráficos exportados, usados abaixo
 requirements.txt
 ```
 
-## Resumo dos resultados
+## Resultados
 
 ### 1. Gêneros com mais avaliações e melhores notas
 
-Fiction, Fantasy e Young Adult lideram em volume — mas os três descrevem boa parte do mesmo
-acervo, já que cada livro entra, em média, em **7,8 gêneros**.
+Fiction, Fantasy e Young Adult lideram em volume. Como cada livro entra, em média, em **7,8
+gêneros**, os três se sobrepõem bastante.
 
 ![Gêneros com mais avaliações](images/01-generos-avaliacoes.png)
 
@@ -47,42 +47,67 @@ acervo, já que cada livro entra, em média, em **7,8 gêneros**.
 | Audiobook | 333.774.204 | 3,992 | 7.204 |
 | Romance | 324.139.718 | 3,989 | 14.527 |
 
-Quando o critério vira a **nota média** (com um mínimo de 5 livros por gênero), o ranking troca
-de cara: sobem nichos como Baha'i, Cartoon Strips e Webcomic — pequenos, coesos e bem avaliados
-por públicos específicos.
+Quando o critério passa a ser a **nota média** (exigindo pelo menos 5 livros por gênero), a lista
+muda: aparecem nichos pequenos e bem avaliados, como Baha I, Cartoon e Comic Strips.
 
 ![Gêneros com melhores notas](images/02-generos-nota-media.png)
 
 | gênero | nota média | avaliações | livros |
 | --- | ---: | ---: | ---: |
-| Baha'i | 4,625 | 1.588 | 6 |
+| Baha I | 4,625 | 1.588 | 6 |
 | Cartoon | 4,474 | 367.823 | 37 |
 | Comic Strips | 4,459 | 716.979 | 59 |
-| LDS Non Fiction | 4,427 | 161.535 | 29 |
+| Lds Non Fiction | 4,427 | 161.535 | 29 |
 | Scripture | 4,425 | 30.108 | 24 |
 
 ### 2. Melhores livros por gênero
 
-Top 3 por nota dentro de cada gênero. O resultado revela o principal limite do critério: sem
-filtro de volume, o topo dos "gêneros" mais comuns é ocupado por recortes minúsculos, como
-século por século, onde três ou quatro títulos bastam para preencher o pódio.
+Os três livros de melhor nota nos seis gêneros mais populares. O critério é só a nota; nos
+empates, desempato pela quantidade de avaliações. Na figura, cada linha é um gênero, cada coluna
+é a posição, e a cor é a nota. Dentro de cada célula estão o título, a nota e o número de
+avaliações.
+
+![Livros mais bem avaliados por gênero](images/06-livros-por-genero.png)
+
+| gênero | posição | título | nota | avaliações |
+| --- | ---: | --- | ---: | ---: |
+| Fiction | 1º | Battle for Erthia | 5,00 | 7 |
+| Fiction | 2º | Here Before Kilroy | 5,00 | 2 |
+| Fiction | 3º | The Present | 4,92 | 463 |
+| Romance | 1º | Battle for Erthia | 5,00 | 7 |
+| Romance | 2º | Kiss Me, I'm Irish | 5,00 | 4 |
+| Romance | 3º | Shadowed Love | 5,00 | 2 |
+| Fantasy | 1º | 16 Myths | 5,00 | 9 |
+| Fantasy | 2º | Battle for Erthia | 5,00 | 7 |
+| Fantasy | 3º | Bertie's Book of Spooky Wonders | 5,00 | 4 |
+| Young Adult | 1º | Battle for Erthia | 5,00 | 7 |
+| Young Adult | 2º | The Present | 4,92 | 463 |
+| Young Adult | 3º | Maya of the Inbetween | 4,86 | 90 |
+| Contemporary | 1º | Truth and Measure | 4,78 | 260 |
+| Contemporary | 2º | All the Lies | 4,72 | 5.398 |
+| Contemporary | 3º | The 'Burg Series: The Complete Box Set | 4,72 | 1.213 |
+| Nonfiction | 1º | A Debt Free You | 4,92 | 12 |
+| Nonfiction | 2º | Among the Pigeons | 4,88 | 8 |
+| Nonfiction | 3º | Намедни. Наша эра. 1946-1960. | 4,86 | 22 |
+
+Um mesmo livro, **Battle for Erthia**, aparece em primeiro lugar em três gêneros diferentes — sinal
+de que as tags de gênero se espalham demais. E boa parte desses livros tem menos de 10 avaliações.
 
 ### 3. Autores que se destacam por gênero
 
-Mínimo de 2 livros por autor dentro do gênero. A figura mostra bem o padrão: pouquíssimos nomes
-se repetem por vários recortes ao mesmo tempo.
+Para cada gênero, o autor com a melhor nota média, exigindo pelo menos 2 livros dele no gênero.
+Isso evita que alguém com um único livro bem avaliado apareça na frente de quem tem vários.
 
 ![Autores por gênero](images/03-autores-por-genero.png)
 
-Destaques: **Bill Watterson** (Calvin and Hobbes, 4,73 em Comics), **Brandon Sanderson** (4,73 em
-Novels) e **Elias Zapple** / **Kenneth Thomas**, que aparecem em muitos gêneros — sinal de que
-suas obras são marcadas com um leque amplo de tags.
+Os nomes mais conhecidos da lista são **Bill Watterson** (Calvin e Hobbes) e **Brandon Sanderson**.
+Já **Elias Zapple** e **Kenneth Thomas** aparecem em muitos gêneros, porque seus livros recebem
+várias tags.
 
 ### 4. Livros mais caros
 
-A lista é dominada por **box sets e obras de referência**, não por romances caros: um dicionário
-de 20 volumes, coleções de mangá e guias técnicos. O preço mediano do acervo, para comparação, é
-de apenas **US$ 5,20**.
+A lista é dominada por **box sets e obras de referência** — um dicionário de 20 volumes, coleções
+de mangá e guias técnicos. Para comparar, o preço mediano do acervo é de apenas **US$ 5,20**.
 
 ![Livros mais caros](images/04-livros-mais-caros.png)
 
@@ -98,20 +123,20 @@ de apenas **US$ 5,20**.
 
 ![Preço x nota x avaliações](images/05-preco-nota-avaliacoes.png)
 
-Livros mais avaliados tendem a notas mais estáveis; a nota satura entre 3,8 e 4,4 na maior parte
-do acervo, e o preço não mostra relação clara com nenhuma das duas.
+A nota se concentra entre 3,8 e 4,4 na maior parte do acervo, e o preço não muda muito esse
+padrão.
 
 ## Onde estes números merecem desconfiança
 
 - **A soma por gênero conta a mesma avaliação várias vezes.** Um livro com 8 gêneros soma suas
-  avaliações 8 vezes, e o total agregado sai cerca de 10x acima do real. Serve para comparar
+  avaliações 8 vezes, e o total fica cerca de 10x maior que o real. Use os valores para comparar
   gêneros entre si, não como contagem de leitores.
-- **A média de nota é não ponderada.** Um livro com 2 avaliações pesa o mesmo que um com 300 mil.
+- **A média de nota não é ponderada.** Um livro com 2 avaliações pesa o mesmo que um com 300 mil.
 - **O ranking de livros por gênero não filtra por volume.** São 2.444 livros com menos de 10
   avaliações, e 1.346 deles com nota ≥ 4,5.
-- **Preço compara edições, não obras.** Box set, paperback e ebook do mesmo título entram na
+- **O preço compara edições, não obras.** Box set, paperback e ebook do mesmo título entram na
   mesma lista.
-- **Cobertura parcial:** 27,4% do acervo não tem preço, e 81% do catálogo está em inglês.
+- **A cobertura é parcial:** 27,4% do acervo não tem preço, e 81% está em inglês.
 
 ## Stack
 
