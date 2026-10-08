@@ -22,13 +22,30 @@ sns.set_theme(style="white", rc={
 df = pd.read_csv("books_1.Best_Books_Ever.csv")
 df["genres"] = df["genres"].apply(lambda x: ast.literal_eval(x) if pd.notna(x) else [])
 df["price"] = pd.to_numeric(df["price"], errors="coerce")
+df = df.drop_duplicates(subset="bookId").reset_index(drop=True)
+
+# Nota ponderada (media bayesiana): cada livro "empresta" M avaliacoes com a nota
+# media do acervo (C). Livros com poucas avaliacoes ficam perto da media; livros
+# muito avaliados ficam com a propria nota. M = mediana de avaliacoes por livro.
+avaliados = df[df["numRatings"] > 0]
+C = (avaliados["rating"] * avaliados["numRatings"]).sum() / avaliados["numRatings"].sum()
+M = avaliados["numRatings"].median()
+
+
+def nota_ponderada(pontos, avaliacoes, m=M, c=C):
+    return (pontos + m * c) / (avaliacoes + m)
+
+
+df["pontos"] = df["rating"] * df["numRatings"]
+df["nota_ponderada"] = nota_ponderada(df["pontos"], df["numRatings"])
 df_exploded = df.explode("genres")
 
 genre_stats = df_exploded.groupby("genres").agg(
     total_ratings=("numRatings", "sum"),
-    avg_rating=("rating", "mean"),
+    pontos=("pontos", "sum"),
     book_count=("title", "nunique"),
 ).sort_values("total_ratings", ascending=False)
+genre_stats["avg_rating"] = nota_ponderada(genre_stats["pontos"], genre_stats["total_ratings"])
 
 reliable = genre_stats[genre_stats["book_count"] >= 5].sort_values("avg_rating", ascending=False).head(15)
 
@@ -70,7 +87,7 @@ plt.show()
 print()
 
 print("=" * 70)
-print("1b. GÊNEROS COM MELHORES NOTAS MÉDIAS (mín. 5 livros, TOP 15)")
+print("1b. GÊNEROS COM MELHORES NOTAS (nota ponderada, mín. 5 livros, TOP 15)")
 print("=" * 70)
 display2 = reliable[["total_ratings", "avg_rating", "book_count"]].copy()
 display2["total_ratings"] = display2["total_ratings"].apply(lambda x: f"{x:,.0f}")
@@ -85,8 +102,8 @@ vals_avg = top_avg["avg_rating"].values
 bars2 = ax2.barh(range(len(top_avg)), vals_avg, color=colors_avg, height=0.6, zorder=3)
 ax2.set_yticks(range(len(top_avg)))
 ax2.set_yticklabels(top_avg.index, fontsize=11)
-ax2.set_xlabel("Nota Média", fontsize=12, color="#555555")
-ax2.set_title("Gêneros com Melhores Notas (mín. 5 livros)", fontsize=16, fontweight="bold", pad=15)
+ax2.set_xlabel("Nota Ponderada", fontsize=12, color="#555555")
+ax2.set_title("Gêneros com Melhores Notas (nota ponderada, mín. 5 livros)", fontsize=16, fontweight="bold", pad=15)
 ax2.spines["top"].set_visible(False); ax2.spines["right"].set_visible(False)
 ax2.spines["left"].set_color("#cccccc"); ax2.spines["bottom"].set_color("#cccccc")
 ax2.tick_params(axis="y", left=False); ax2.tick_params(axis="x", colors="#555555")
@@ -99,26 +116,42 @@ plt.show()
 print()
 
 print("=" * 70)
-print("2. LIVROS MAIS BEM AVALIADOS DENTRO DE CADA GÊNERO (TOP 3)")
+print("2. LIVROS MAIS BEM AVALIADOS NOS 6 GÊNEROS MAIS POPULARES (nota ponderada, TOP 3)")
 print("=" * 70)
-df_exploded["rank_in_genre"] = df_exploded.groupby("genres")["rating"].rank("dense", ascending=False)
-top_books = df_exploded[df_exploded["rank_in_genre"] <= 3][["genres", "title", "author", "rating"]].drop_duplicates()
-top_books_sample = top_books.groupby("genres").head(3).head(50)
-print(top_books_sample.to_string(index=False))
+generos_populares = (
+    df_exploded.groupby("genres")["title"].nunique()
+    .sort_values(ascending=False).head(6).index
+)
+top_books = (
+    df_exploded[df_exploded["genres"].isin(generos_populares)]
+    .sort_values("nota_ponderada", ascending=False)
+    .drop_duplicates(subset=["genres", "title", "author"])
+    .groupby("genres").head(3)
+    .sort_values(["genres", "nota_ponderada"], ascending=[True, False])
+)
+top_books["nota_ponderada"] = top_books["nota_ponderada"].round(3)
+print(top_books[["genres", "title", "rating", "numRatings", "nota_ponderada"]].to_string(index=False))
 print()
 
 print("=" * 70)
-print("3. AUTORES QUE SE DESTACAM POR GÊNERO (MELHOR NOTA MÉDIA, mín. 2 livros)")
+print("3. MELHOR AUTOR NOS 12 GÊNEROS MAIS POPULARES (nota ponderada, mín. 2 livros)")
 print("=" * 70)
 author_genre = df_exploded.groupby(["genres", "author"]).agg(
-    avg_rating=("rating", "mean"),
+    total_ratings=("numRatings", "sum"),
+    pontos=("pontos", "sum"),
     book_count=("title", "nunique"),
 ).reset_index()
-author_genre = author_genre[author_genre["book_count"] >= 2]
-top_authors = author_genre.loc[author_genre.groupby("genres")["avg_rating"].idxmax()]
-top_authors = top_authors.sort_values("avg_rating", ascending=False).head(20)
-top_authors["avg_rating"] = top_authors["avg_rating"].round(2)
-print(top_authors[["genres", "author", "avg_rating", "book_count"]].to_string(index=False))
+author_genre = author_genre[author_genre["book_count"] >= 2].copy()
+author_genre["avg_rating"] = nota_ponderada(author_genre["pontos"], author_genre["total_ratings"])
+generos_autores = (
+    df_exploded.groupby("genres")["title"].nunique()
+    .sort_values(ascending=False).head(12).index
+)
+candidatos = author_genre[author_genre["genres"].isin(generos_autores)]
+top_authors = candidatos.loc[candidatos.groupby("genres")["avg_rating"].idxmax()]
+top_authors = top_authors.sort_values("avg_rating", ascending=False)
+top_authors["avg_rating"] = top_authors["avg_rating"].round(3)
+print(top_authors[["genres", "author", "avg_rating", "total_ratings", "book_count"]].to_string(index=False))
 print()
 
 print("=" * 70)
